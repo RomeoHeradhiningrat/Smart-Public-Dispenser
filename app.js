@@ -11,7 +11,7 @@
 const firebaseConfig = {
 
     apiKey:
-        "AIzaSyBbCtWZDMtNB38YUfbWPSGe2Fv0v1n8",
+        "AIzaSyBbCtWZDMtNB38YUfbWPSGe2F0vSOvm1n8",
 
     authDomain:
         "smart-dispenser-b4450.firebaseapp.com",
