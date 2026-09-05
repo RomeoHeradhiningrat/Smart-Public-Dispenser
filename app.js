@@ -9,7 +9,9 @@
 // ============================================================
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBbCtWZDMtNB38YUfbWPSGe2F0vSOvm1n8",
+
+    apiKey:
+        "AIzaSyBbCtWZDMtNB38YUfbWPSGe2Fv0v1n8",
 
     authDomain:
         "smart-dispenser-b4450.firebaseapp.com",
@@ -40,9 +42,11 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-const auth = firebase.auth();
+const auth =
+    firebase.auth();
 
-const database = firebase.database();
+const database =
+    firebase.database();
 
 
 // ============================================================
@@ -54,7 +58,7 @@ const dispenserRef =
 
 
 // ============================================================
-// DOM
+// DOM - LOGIN
 // ============================================================
 
 const loginPage =
@@ -67,10 +71,10 @@ const loginForm =
     document.getElementById("loginForm");
 
 const emailInput =
-    document.getElementById("email");
+    document.getElementById("emailInput");
 
 const passwordInput =
-    document.getElementById("password");
+    document.getElementById("passwordInput");
 
 const loginButton =
     document.getElementById("loginButton");
@@ -89,35 +93,29 @@ const logoutButton =
 
 
 // ============================================================
-// DASHBOARD ELEMENTS
+// DOM - CONNECTION / SYSTEM STATUS
 // ============================================================
 
 const firebaseStatus =
     document.getElementById("firebaseStatus");
 
 const firebaseStatusDot =
-    document.getElementById("firebaseStatusDot");
+    document.getElementById("firebaseDot");
 
 const dataStatus =
     document.getElementById("dataStatus");
 
 const dataStatusDot =
-    document.getElementById("dataStatusDot");
+    document.getElementById("dataDot");
 
 const sensorStatus =
     document.getElementById("sensorStatus");
 
 const sensorStatusDot =
-    document.getElementById("sensorStatusDot");
+    document.getElementById("sensorDot");
 
 const lastUpdate =
     document.getElementById("lastUpdate");
-
-const overallStatus =
-    document.getElementById("overallStatus");
-
-const overallStatusText =
-    document.getElementById("overallStatusText");
 
 const sidebarConnectionText =
     document.getElementById("sidebarConnectionText");
@@ -127,23 +125,23 @@ const sidebarConnectionDot =
 
 
 // ============================================================
-// DATA ELEMENTS
+// DOM - DASHBOARD DATA
 // ============================================================
 
 const galonStatus =
     document.getElementById("galonStatus");
 
-const galonBadge =
-    document.getElementById("galonBadge");
+const galonDescription =
+    document.getElementById("galonDescription");
 
 const totalWater =
-    document.getElementById("totalWater");
+    document.getElementById("totalUsage");
 
 const coldTemperature =
-    document.getElementById("coldTemperature");
+    document.getElementById("coldTemp");
 
 const hotTemperature =
-    document.getElementById("hotTemperature");
+    document.getElementById("hotTemp");
 
 const detailGalon =
     document.getElementById("detailGalon");
@@ -155,7 +153,21 @@ const detailHot =
     document.getElementById("detailHot");
 
 const detailWater =
-    document.getElementById("detailWater");
+    document.getElementById("detailUsage");
+
+
+// ============================================================
+// OPTIONAL ELEMENTS
+// ============================================================
+
+const liveDot =
+    document.getElementById("liveDot");
+
+const liveText =
+    document.getElementById("liveText");
+
+const footerYear =
+    document.getElementById("footerYear");
 
 
 // ============================================================
@@ -174,42 +186,110 @@ const MAX_POINTS = 30;
 
 
 // ============================================================
-// HELPER
+// DASHBOARD STATE
+// ============================================================
+
+let dashboardInitialized = false;
+
+
+// ============================================================
+// HELPER - SAFE ELEMENT
+// ============================================================
+
+function elementExists(element) {
+
+    return element !== null &&
+           element !== undefined;
+
+}
+
+
+// ============================================================
+// SHOW LOGIN
 // ============================================================
 
 function showLogin() {
 
-    loginPage.classList.remove("hidden");
+    if (elementExists(loginPage)) {
 
-    dashboardPage.classList.add("hidden");
+        loginPage.classList.remove("hidden");
+
+    }
+
+    if (elementExists(dashboardPage)) {
+
+        dashboardPage.classList.add("hidden");
+
+    }
+
 }
 
+
+// ============================================================
+// SHOW DASHBOARD
+// ============================================================
 
 function showDashboard() {
 
-    loginPage.classList.add("hidden");
+    if (elementExists(loginPage)) {
 
-    dashboardPage.classList.remove("hidden");
+        loginPage.classList.add("hidden");
+
+    }
+
+    if (elementExists(dashboardPage)) {
+
+        dashboardPage.classList.remove("hidden");
+
+    }
+
 }
 
+
+// ============================================================
+// LOGIN ERROR
+// ============================================================
 
 function showLoginError(message) {
 
-    loginError.textContent = message;
+    if (!elementExists(loginError)) {
+        return;
+    }
+
+    loginError.textContent =
+        message;
 
     loginError.classList.remove("hidden");
+
 }
 
 
+// ============================================================
+// HIDE LOGIN ERROR
+// ============================================================
+
 function hideLoginError() {
+
+    if (!elementExists(loginError)) {
+        return;
+    }
 
     loginError.classList.add("hidden");
 
     loginError.textContent = "";
+
 }
 
 
+// ============================================================
+// STATUS DOT
+// ============================================================
+
 function setStatusDot(element, status) {
+
+    if (!elementExists(element)) {
+        return;
+    }
 
     element.classList.remove(
         "online",
@@ -218,6 +298,7 @@ function setStatusDot(element, status) {
     );
 
     element.classList.add(status);
+
 }
 
 
@@ -225,194 +306,304 @@ function setStatusDot(element, status) {
 // LOGIN
 // ============================================================
 
-loginForm.addEventListener(
-    "submit",
-    async function(event) {
+if (elementExists(loginForm)) {
 
-        event.preventDefault();
+    loginForm.addEventListener(
+        "submit",
+        async function(event) {
 
-        hideLoginError();
+            event.preventDefault();
 
-        const email =
-            emailInput.value.trim();
-
-        const password =
-            passwordInput.value;
-
-        if (!email || !password) {
-
-            showLoginError(
-                "Email dan password wajib diisi."
-            );
-
-            return;
-        }
+            hideLoginError();
 
 
-        loginButton.disabled = true;
+            // ------------------------------------------------
+            // CEK ELEMENT HTML
+            // ------------------------------------------------
 
-        loginButtonText.textContent =
-            "Sedang masuk...";
+            if (
+                !elementExists(emailInput) ||
+                !elementExists(passwordInput)
+            ) {
 
+                console.error(
+                    "Login input tidak ditemukan."
+                );
 
-        try {
+                showLoginError(
+                    "Form login bermasalah. Periksa ID email/password pada HTML."
+                );
 
-            await auth.signInWithEmailAndPassword(
-                email,
-                password
-            );
-
-        }
-
-        catch (error) {
-
-            console.error(
-                "Firebase Login Error:",
-                error
-            );
-
-
-            let message =
-                "Login gagal. Periksa email dan password.";
-
-
-            switch (error.code) {
-
-                case "auth/invalid-email":
-
-                    message =
-                        "Format email tidak valid.";
-
-                    break;
-
-
-                case "auth/user-not-found":
-
-                    message =
-                        "Akun Firebase tidak ditemukan.";
-
-                    break;
-
-
-                case "auth/wrong-password":
-
-                    message =
-                        "Password yang dimasukkan salah.";
-
-                    break;
-
-
-                case "auth/invalid-credential":
-
-                    message =
-                        "Email atau password salah.";
-
-                    break;
-
-
-                case "auth/too-many-requests":
-
-                    message =
-                        "Terlalu banyak percobaan login. Coba lagi nanti.";
-
-                    break;
-
-
-                case "auth/user-disabled":
-
-                    message =
-                        "Akun Firebase ini telah dinonaktifkan.";
-
-                    break;
-
-
-                case "auth/network-request-failed":
-
-                    message =
-                        "Koneksi internet bermasalah.";
-
-                    break;
+                return;
 
             }
 
 
-            showLoginError(message);
+            // ------------------------------------------------
+            // AMBIL INPUT
+            // ------------------------------------------------
+
+            const email =
+                emailInput.value.trim();
+
+            const password =
+                passwordInput.value;
+
+
+            // ------------------------------------------------
+            // VALIDASI
+            // ------------------------------------------------
+
+            if (!email || !password) {
+
+                showLoginError(
+                    "Email dan password wajib diisi."
+                );
+
+                return;
+
+            }
+
+
+            // ------------------------------------------------
+            // DISABLE BUTTON
+            // ------------------------------------------------
+
+            if (elementExists(loginButton)) {
+
+                loginButton.disabled = true;
+
+            }
+
+            if (elementExists(loginButtonText)) {
+
+                loginButtonText.textContent =
+                    "Sedang masuk...";
+
+            }
+
+
+            // ------------------------------------------------
+            // FIREBASE LOGIN
+            // ------------------------------------------------
+
+            try {
+
+                await auth.signInWithEmailAndPassword(
+                    email,
+                    password
+                );
+
+
+                console.log(
+                    "Login Firebase berhasil:",
+                    email
+                );
+
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Firebase Login Error:",
+                    error
+                );
+
+
+                let message =
+                    "Login gagal. Periksa email dan password.";
+
+
+                switch (error.code) {
+
+                    case "auth/invalid-email":
+
+                        message =
+                            "Format email tidak valid.";
+
+                        break;
+
+
+                    case "auth/user-not-found":
+
+                        message =
+                            "Akun Firebase tidak ditemukan.";
+
+                        break;
+
+
+                    case "auth/wrong-password":
+
+                        message =
+                            "Password yang dimasukkan salah.";
+
+                        break;
+
+
+                    case "auth/invalid-credential":
+
+                        message =
+                            "Email atau password salah.";
+
+                        break;
+
+
+                    case "auth/too-many-requests":
+
+                        message =
+                            "Terlalu banyak percobaan login. Coba lagi nanti.";
+
+                        break;
+
+
+                    case "auth/user-disabled":
+
+                        message =
+                            "Akun Firebase ini telah dinonaktifkan.";
+
+                        break;
+
+
+                    case "auth/network-request-failed":
+
+                        message =
+                            "Koneksi internet bermasalah.";
+
+                        break;
+
+
+                    case "auth/operation-not-allowed":
+
+                        message =
+                            "Login Email/Password belum diaktifkan di Firebase Authentication.";
+
+                        break;
+
+
+                    case "auth/api-key-not-valid":
+
+                        message =
+                            "Firebase API Key tidak valid.";
+
+                        break;
+
+
+                    default:
+
+                        if (error.message) {
+
+                            console.error(
+                                "Detail Firebase:",
+                                error.message
+                            );
+
+                        }
+
+                        break;
+
+                }
+
+
+                showLoginError(message);
+
+            }
+
+            finally {
+
+                if (elementExists(loginButton)) {
+
+                    loginButton.disabled = false;
+
+                }
+
+                if (elementExists(loginButtonText)) {
+
+                    loginButtonText.textContent =
+                        "Login Dashboard";
+
+                }
+
+            }
 
         }
+    );
 
-        finally {
-
-            loginButton.disabled = false;
-
-            loginButtonText.textContent =
-                "Masuk ke Dashboard";
-
-        }
-
-    }
-);
+}
 
 
 // ============================================================
 // SHOW / HIDE PASSWORD
 // ============================================================
 
-togglePassword.addEventListener(
-    "click",
-    function() {
+if (elementExists(togglePassword)) {
 
-        if (
-            passwordInput.type ===
-            "password"
-        ) {
+    togglePassword.addEventListener(
+        "click",
+        function() {
 
-            passwordInput.type =
-                "text";
+            if (
+                passwordInput.type ===
+                "password"
+            ) {
 
-            togglePassword.textContent =
-                "🙈";
+                passwordInput.type =
+                    "text";
+
+                togglePassword.textContent =
+                    "🙈";
+
+            }
+
+            else {
+
+                passwordInput.type =
+                    "password";
+
+                togglePassword.textContent =
+                    "👁";
+
+            }
 
         }
+    );
 
-        else {
-
-            passwordInput.type =
-                "password";
-
-            togglePassword.textContent =
-                "👁";
-
-        }
-
-    }
-);
+}
 
 
 // ============================================================
 // LOGOUT
 // ============================================================
 
-logoutButton.addEventListener(
-    "click",
-    async function() {
+if (elementExists(logoutButton)) {
 
-        try {
+    logoutButton.addEventListener(
+        "click",
+        async function() {
 
-            await auth.signOut();
+            try {
+
+                await auth.signOut();
+
+                console.log(
+                    "Firebase logout berhasil."
+                );
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Logout error:",
+                    error
+                );
+
+            }
 
         }
+    );
 
-        catch (error) {
-
-            console.error(
-                "Logout error:",
-                error
-            );
-
-        }
-
-    }
-);
+}
 
 
 // ============================================================
@@ -429,7 +620,9 @@ auth.onAuthStateChanged(
                 user.email
             );
 
+
             showDashboard();
+
 
             initializeDashboard();
 
@@ -441,7 +634,11 @@ auth.onAuthStateChanged(
                 "Firebase: Not authenticated"
             );
 
+
             showLogin();
+
+            dashboardInitialized =
+                false;
 
         }
 
@@ -469,11 +666,26 @@ function monitorFirebaseConnection() {
 
             if (connected) {
 
-                firebaseStatus.textContent =
-                    "Connected";
+                if (elementExists(firebaseStatus)) {
 
-                sidebarConnectionText.textContent =
-                    "Connected";
+                    firebaseStatus.textContent =
+                        "Connected";
+
+                }
+
+                if (elementExists(sidebarConnectionText)) {
+
+                    sidebarConnectionText.textContent =
+                        "Connected";
+
+                }
+
+                if (elementExists(liveText)) {
+
+                    liveText.textContent =
+                        "Live";
+
+                }
 
 
                 setStatusDot(
@@ -485,16 +697,38 @@ function monitorFirebaseConnection() {
                     sidebarConnectionDot,
                     "online"
                 );
+
+
+                if (elementExists(liveDot)) {
+
+                    liveDot.classList.add("online");
+
+                }
 
             }
 
             else {
 
-                firebaseStatus.textContent =
-                    "Disconnected";
+                if (elementExists(firebaseStatus)) {
 
-                sidebarConnectionText.textContent =
-                    "Disconnected";
+                    firebaseStatus.textContent =
+                        "Disconnected";
+
+                }
+
+                if (elementExists(sidebarConnectionText)) {
+
+                    sidebarConnectionText.textContent =
+                        "Disconnected";
+
+                }
+
+                if (elementExists(liveText)) {
+
+                    liveText.textContent =
+                        "Offline";
+
+                }
 
 
                 setStatusDot(
@@ -506,6 +740,13 @@ function monitorFirebaseConnection() {
                     sidebarConnectionDot,
                     "offline"
                 );
+
+
+                if (elementExists(liveDot)) {
+
+                    liveDot.classList.remove("online");
+
+                }
 
             }
 
@@ -519,16 +760,16 @@ function monitorFirebaseConnection() {
 // INITIALIZE DASHBOARD
 // ============================================================
 
-let dashboardInitialized = false;
-
-
 function initializeDashboard() {
 
     if (dashboardInitialized) {
+
         return;
+
     }
 
-    dashboardInitialized = true;
+    dashboardInitialized =
+        true;
 
 
     initializeChart();
@@ -558,15 +799,45 @@ function monitorDispenser() {
                     "Path /dispenser tidak ditemukan."
                 );
 
-                dataStatus.textContent =
-                    "No Data";
+
+                if (elementExists(dataStatus)) {
+
+                    dataStatus.textContent =
+                        "No Data";
+
+                }
+
 
                 setStatusDot(
                     dataStatusDot,
                     "waiting"
                 );
 
+
+                if (elementExists(sensorStatus)) {
+
+                    sensorStatus.textContent =
+                        "Waiting";
+
+                }
+
+
+                setStatusDot(
+                    sensorStatusDot,
+                    "waiting"
+                );
+
+
+                if (elementExists(liveText)) {
+
+                    liveText.textContent =
+                        "No Data";
+
+                }
+
+
                 return;
+
             }
 
 
@@ -583,8 +854,13 @@ function monitorDispenser() {
             updateDashboard(data);
 
 
-            dataStatus.textContent =
-                "Receiving Data";
+            if (elementExists(dataStatus)) {
+
+                dataStatus.textContent =
+                    "Receiving Data";
+
+            }
+
 
             setStatusDot(
                 dataStatusDot,
@@ -592,8 +868,13 @@ function monitorDispenser() {
             );
 
 
-            sensorStatus.textContent =
-                "Active";
+            if (elementExists(sensorStatus)) {
+
+                sensorStatus.textContent =
+                    "Active";
+
+            }
+
 
             setStatusDot(
                 sensorStatusDot,
@@ -601,26 +882,31 @@ function monitorDispenser() {
             );
 
 
+            if (elementExists(liveText)) {
+
+                liveText.textContent =
+                    "Live";
+
+            }
+
+
             const now =
                 new Date();
 
 
-            lastUpdate.textContent =
-                now.toLocaleTimeString(
-                    "id-ID",
-                    {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit"
-                    }
-                );
+            if (elementExists(lastUpdate)) {
 
+                lastUpdate.textContent =
+                    now.toLocaleTimeString(
+                        "id-ID",
+                        {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit"
+                        }
+                    );
 
-            overallStatus.className =
-                "overall-status online";
-
-            overallStatusText.textContent =
-                "System Online";
+            }
 
         },
 
@@ -632,8 +918,13 @@ function monitorDispenser() {
             );
 
 
-            dataStatus.textContent =
-                "Read Error";
+            if (elementExists(dataStatus)) {
+
+                dataStatus.textContent =
+                    "Read Error";
+
+            }
+
 
             setStatusDot(
                 dataStatusDot,
@@ -641,8 +932,13 @@ function monitorDispenser() {
             );
 
 
-            sensorStatus.textContent =
-                "Unavailable";
+            if (elementExists(sensorStatus)) {
+
+                sensorStatus.textContent =
+                    "Unavailable";
+
+            }
+
 
             setStatusDot(
                 sensorStatusDot,
@@ -650,11 +946,12 @@ function monitorDispenser() {
             );
 
 
-            overallStatus.className =
-                "overall-status offline";
+            if (elementExists(liveText)) {
 
-            overallStatusText.textContent =
-                "Database Error";
+                liveText.textContent =
+                    "Database Error";
+
+            }
 
         }
 
@@ -669,9 +966,10 @@ function monitorDispenser() {
 
 function updateDashboard(data) {
 
-    // --------------------------------------------------------
+
+    // ========================================================
     // STATUS GALON
-    // --------------------------------------------------------
+    // ========================================================
 
     const statusGalon =
         Number(data.statusGalon);
@@ -679,59 +977,83 @@ function updateDashboard(data) {
 
     if (statusGalon === 1) {
 
-        galonStatus.textContent =
-            "Tersedia";
+        if (elementExists(galonStatus)) {
 
-        detailGalon.textContent =
-            "Tersedia";
+            galonStatus.textContent =
+                "Tersedia";
 
+        }
 
-        galonBadge.textContent =
-            "Available";
+        if (elementExists(galonDescription)) {
 
-        galonBadge.className =
-            "badge available";
+            galonDescription.textContent =
+                "Galon tersedia dan dapat digunakan";
+
+        }
+
+        if (elementExists(detailGalon)) {
+
+            detailGalon.textContent =
+                "1";
+
+        }
 
     }
 
     else if (statusGalon === 0) {
 
-        galonStatus.textContent =
-            "Habis";
+        if (elementExists(galonStatus)) {
 
-        detailGalon.textContent =
-            "Habis";
+            galonStatus.textContent =
+                "Habis";
 
+        }
 
-        galonBadge.textContent =
-            "Empty";
+        if (elementExists(galonDescription)) {
 
-        galonBadge.className =
-            "badge empty";
+            galonDescription.textContent =
+                "Air galon habis";
+
+        }
+
+        if (elementExists(detailGalon)) {
+
+            detailGalon.textContent =
+                "0";
+
+        }
 
     }
 
     else {
 
-        galonStatus.textContent =
-            "Unknown";
+        if (elementExists(galonStatus)) {
 
-        detailGalon.textContent =
-            "Unknown";
+            galonStatus.textContent =
+                "Unknown";
 
+        }
 
-        galonBadge.textContent =
-            "Unknown";
+        if (elementExists(galonDescription)) {
 
-        galonBadge.className =
-            "badge waiting";
+            galonDescription.textContent =
+                "Status galon tidak diketahui";
+
+        }
+
+        if (elementExists(detailGalon)) {
+
+            detailGalon.textContent =
+                "—";
+
+        }
 
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // SUHU DINGIN
-    // --------------------------------------------------------
+    // ========================================================
 
     const cold =
         Number(data.suhuDingin);
@@ -739,28 +1061,44 @@ function updateDashboard(data) {
 
     if (Number.isFinite(cold)) {
 
-        coldTemperature.textContent =
-            cold.toFixed(1);
+        if (elementExists(coldTemperature)) {
 
-        detailCold.textContent =
-            cold.toFixed(1);
+            coldTemperature.textContent =
+                cold.toFixed(1);
+
+        }
+
+        if (elementExists(detailCold)) {
+
+            detailCold.textContent =
+                cold.toFixed(1) + " °C";
+
+        }
 
     }
 
     else {
 
-        coldTemperature.textContent =
-            "—";
+        if (elementExists(coldTemperature)) {
 
-        detailCold.textContent =
-            "—";
+            coldTemperature.textContent =
+                "--";
+
+        }
+
+        if (elementExists(detailCold)) {
+
+            detailCold.textContent =
+                "—";
+
+        }
 
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // SUHU PANAS
-    // --------------------------------------------------------
+    // ========================================================
 
     const hot =
         Number(data.suhuPanas);
@@ -768,28 +1106,44 @@ function updateDashboard(data) {
 
     if (Number.isFinite(hot)) {
 
-        hotTemperature.textContent =
-            hot.toFixed(1);
+        if (elementExists(hotTemperature)) {
 
-        detailHot.textContent =
-            hot.toFixed(1);
+            hotTemperature.textContent =
+                hot.toFixed(1);
+
+        }
+
+        if (elementExists(detailHot)) {
+
+            detailHot.textContent =
+                hot.toFixed(1) + " °C";
+
+        }
 
     }
 
     else {
 
-        hotTemperature.textContent =
-            "—";
+        if (elementExists(hotTemperature)) {
 
-        detailHot.textContent =
-            "—";
+            hotTemperature.textContent =
+                "--";
+
+        }
+
+        if (elementExists(detailHot)) {
+
+            detailHot.textContent =
+                "—";
+
+        }
 
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // TOTAL PENGGUNAAN AIR
-    // --------------------------------------------------------
+    // ========================================================
 
     const water =
         Number(data.totalPenggunaanAir);
@@ -797,28 +1151,44 @@ function updateDashboard(data) {
 
     if (Number.isFinite(water)) {
 
-        totalWater.textContent =
-            water.toFixed(2);
+        if (elementExists(totalWater)) {
 
-        detailWater.textContent =
-            water.toFixed(2);
+            totalWater.textContent =
+                water.toFixed(2);
+
+        }
+
+        if (elementExists(detailWater)) {
+
+            detailWater.textContent =
+                water.toFixed(2) + " L";
+
+        }
 
     }
 
     else {
 
-        totalWater.textContent =
-            "—";
+        if (elementExists(totalWater)) {
 
-        detailWater.textContent =
-            "—";
+            totalWater.textContent =
+                "0.00";
+
+        }
+
+        if (elementExists(detailWater)) {
+
+            detailWater.textContent =
+                "—";
+
+        }
 
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // UPDATE CHART
-    // --------------------------------------------------------
+    // ========================================================
 
     updateTemperatureChart(
         cold,
@@ -829,7 +1199,7 @@ function updateDashboard(data) {
 
 
 // ============================================================
-// CHART
+// INITIALIZE CHART
 // ============================================================
 
 function initializeChart() {
@@ -841,7 +1211,13 @@ function initializeChart() {
 
 
     if (!canvas) {
+
+        console.warn(
+            "Canvas temperatureChart tidak ditemukan."
+        );
+
         return;
+
     }
 
 
@@ -1056,7 +1432,9 @@ function updateTemperatureChart(
 ) {
 
     if (!temperatureChart) {
+
         return;
+
     }
 
 
@@ -1087,11 +1465,13 @@ function updateTemperatureChart(
 
     chartLabels.push(time);
 
+
     coldData.push(
         Number.isFinite(cold)
             ? cold
             : null
     );
+
 
     hotData.push(
         Number.isFinite(hot)
@@ -1122,18 +1502,12 @@ function updateTemperatureChart(
 
 
 // ============================================================
-// PREVENT OLD DATA ON LOGOUT
+// FOOTER YEAR
 // ============================================================
 
-auth.onAuthStateChanged(
-    function(user) {
+if (elementExists(footerYear)) {
 
-        if (!user) {
+    footerYear.textContent =
+        new Date().getFullYear();
 
-            dashboardInitialized =
-                false;
-
-        }
-
-    }
-);
+}
