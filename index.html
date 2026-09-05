@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta name="theme-color" content="#f5f9ff">
+  <meta name="description" content="Smart Public Dispenser - Realtime Monitoring Dashboard">
+
+  <title>Smart Public Dispenser</title>
+
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- ======================================================
+       BACKGROUND DECORATION
+       ====================================================== -->
+
+  <div class="background-circle circle-1"></div>
+  <div class="background-circle circle-2"></div>
+
+
+  <!-- ======================================================
+       APP
+       ====================================================== -->
+
+  <div class="app">
+
+
+    <!-- ====================================================
+         SIDEBAR
+         ==================================================== -->
+
+    <aside class="sidebar">
+
+      <div class="brand">
+
+        <div class="brand-logo">
+          💧
+        </div>
+
+        <div class="brand-text">
+          <h2>SMART</h2>
+          <span>PUBLIC DISPENSER</span>
+        </div>
+
+      </div>
+
+
+      <nav class="navigation">
+
+        <div class="nav-section-title">
+          MENU
+        </div>
+
+        <a href="#" class="nav-item active">
+
+          <div class="nav-icon">
+            ▦
+          </div>
+
+          <span>
+            Dashboard
+          </span>
+
+        </a>
+
+
+        <a href="#monitoring" class="nav-item">
+
+          <div class="nav-icon">
+            ◉
+          </div>
+
+          <span>
+            Monitoring
+          </span>
+
+        </a>
+
+
+        <a href="#system" class="nav-item">
+
+          <div class="nav-icon">
+            ⚙
+          </div>
+
+          <span>
+            System
+          </span>
+
+        </a>
+
+      </nav>
+
+
+      <div class="sidebar-bottom">
+
+        <div class="connection-box">
+
+          <div class="connection-icon">
+            <span id="sidebarConnectionDot"></span>
+          </div>
+
+          <div>
+
+            <strong id="sidebarConnectionText">
+              Connecting...
+            </strong>
+
+            <small>
+              Firebase Realtime
+            </small>
+
+          </div>
+
+        </div>
+
+        <div class="sidebar-footer">
+          ESP32 IoT System
+        </div>
+
+      </div>
+
+    </aside>
+
+
+
+    <!-- ====================================================
+         MAIN CONTENT
+         ==================================================== -->
+
+    <main class="main">
+
+
+      <!-- ==================================================
+           TOPBAR
+           ================================================== -->
+
+      <header class="topbar">
+
+        <div>
+
+          <div class="mobile-brand">
+            <div class="mobile-logo">💧</div>
+
+            <div>
+              <strong>SMART DISPENSER</strong>
+              <small>Monitoring Dashboard</small>
+            </div>
+          </div>
+
+          <div class="desktop-page-title">
+
+            <h1>
+              Dashboard
+            </h1>
+
+            <p>
+              Monitor kondisi dispenser secara realtime.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="top-status">
+
+          <span class="status-dot" id="topStatusDot"></span>
+
+          <span id="topStatusText">
+            Connecting...
+          </span>
+
+        </div>
+
+      </header>
+
+
+
+      <!-- ==================================================
+           CONTENT
+           ================================================== -->
+
+      <div class="content">
+
+
+        <!-- =================================================
+             WELCOME
+             ================================================= -->
+
+        <section class="welcome">
+
+          <div>
+
+            <span class="welcome-label">
+              REALTIME MONITORING
+            </span>
+
+            <h2>
+              Smart Public<br>
+              <span>Dispenser System</span>
+            </h2>
+
+            <p>
+              Pantau status galon, suhu air, dan penggunaan
+              dispenser secara langsung.
+            </p>
+
+          </div>
+
+
+          <div class="welcome-water">
+
+            <div class="water-drop">
+              💧
+            </div>
+
+            <div>
+              <strong>
+                SYSTEM
+              </strong>
+
+              <span id="welcomeSystemStatus">
+                Connecting...
+              </span>
+            </div>
+
+          </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             STAT CARDS
+             ================================================= -->
+
+        <section class="stats-grid" id="monitoring">
+
+
+          <!-- GALON -->
+
+          <article class="stat-card">
+
+            <div class="stat-card-header">
+
+              <div>
+
+                <span class="stat-label">
+                  STATUS GALON
+                </span>
+
+                <h3 id="galonStatus">
+                  —
+                </h3>
+
+              </div>
+
+              <div class="stat-icon blue">
+                💧
+              </div>
+
+            </div>
+
+
+            <div class="status-indicator">
+
+              <span id="galonIndicator"></span>
+
+              <span id="galonDescription">
+                Menunggu data...
+              </span>
+
+            </div>
+
+          </article>
+
+
+
+          <!-- TOTAL AIR -->
+
+          <article class="stat-card">
+
+            <div class="stat-card-header">
+
+              <div>
+
+                <span class="stat-label">
+                  TOTAL PENGGUNAAN
+                </span>
+
+                <div class="big-number">
+
+                  <span id="totalAir">
+                    —
+                  </span>
+
+                  <small>
+                    L
+                  </small>
+
+                </div>
+
+              </div>
+
+              <div class="stat-icon cyan">
+                🚰
+              </div>
+
+            </div>
+
+
+            <div class="card-description">
+              Total air yang telah digunakan
+            </div>
+
+          </article>
+
+
+
+          <!-- SUHU DINGIN -->
+
+          <article class="stat-card">
+
+            <div class="stat-card-header">
+
+              <div>
+
+                <span class="stat-label">
+                  SUHU DINGIN
+                </span>
+
+                <div class="big-number">
+
+                  <span id="suhuDingin">
+                    —
+                  </span>
+
+                  <small>
+                    °C
+                  </small>
+
+                </div>
+
+              </div>
+
+              <div class="stat-icon ice">
+                ❄️
+              </div>
+
+            </div>
+
+
+            <div class="card-description">
+              Temperatur sisi pendingin
+            </div>
+
+          </article>
+
+
+
+          <!-- SUHU PANAS -->
+
+          <article class="stat-card">
+
+            <div class="stat-card-header">
+
+              <div>
+
+                <span class="stat-label">
+                  SUHU PANAS
+                </span>
+
+                <div class="big-number">
+
+                  <span id="suhuPanas">
+                    —
+                  </span>
+
+                  <small>
+                    °C
+                  </small>
+
+                </div>
+
+              </div>
+
+              <div class="stat-icon orange">
+                🔥
+              </div>
+
+            </div>
+
+
+            <div class="card-description">
+              Temperatur sisi pemanas
+            </div>
+
+          </article>
+
+
+        </section>
+
+
+
+        <!-- =================================================
+             CHART + SYSTEM
+             ================================================= -->
+
+        <section class="dashboard-grid">
+
+
+          <!-- TEMPERATURE CHART -->
+
+          <article class="panel chart-panel">
+
+            <div class="panel-header">
+
+              <div>
+
+                <span class="panel-label">
+                  TEMPERATURE
+                </span>
+
+                <h3>
+                  Monitoring Suhu
+                </h3>
+
+              </div>
+
+
+              <div class="live-badge">
+
+                <span></span>
+
+                LIVE
+
+              </div>
+
+            </div>
+
+
+            <div class="chart-container">
+
+              <canvas id="temperatureChart"></canvas>
+
+            </div>
+
+
+            <div class="chart-footer">
+
+              <div class="legend">
+
+                <span class="legend-item">
+
+                  <i class="legend-blue"></i>
+
+                  Suhu Dingin
+
+                </span>
+
+
+                <span class="legend-item">
+
+                  <i class="legend-orange"></i>
+
+                  Suhu Panas
+
+                </span>
+
+              </div>
+
+
+              <span class="chart-info">
+                Data realtime
+              </span>
+
+            </div>
+
+          </article>
+
+
+
+          <!-- SYSTEM PANEL -->
+
+          <article class="panel system-panel" id="system">
+
+            <div class="panel-header">
+
+              <div>
+
+                <span class="panel-label">
+                  SYSTEM
+                </span>
+
+                <h3>
+                  Status Sistem
+                </h3>
+
+              </div>
+
+            </div>
+
+
+            <div class="system-list">
+
+
+              <div class="system-item">
+
+                <div class="system-item-icon">
+                  ☁️
+                </div>
+
+                <div class="system-item-info">
+
+                  <strong>
+                    Firebase
+                  </strong>
+
+                  <span id="firebaseStatus">
+                    Connecting...
+                  </span>
+
+                </div>
+
+                <span
+                  class="system-check"
+                  id="firebaseCheck">
+                  ●
+                </span>
+
+              </div>
+
+
+
+              <div class="system-item">
+
+                <div class="system-item-icon">
+                  📡
+                </div>
+
+                <div class="system-item-info">
+
+                  <strong>
+                    Data Dispenser
+                  </strong>
+
+                  <span id="dataStatus">
+                    Waiting...
+                  </span>
+
+                </div>
+
+                <span
+                  class="system-check"
+                  id="dataCheck">
+                  ●
+                </span>
+
+              </div>
+
+
+
+              <div class="system-item">
+
+                <div class="system-item-icon">
+                  🔥
+                </div>
+
+                <div class="system-item-info">
+
+                  <strong>
+                    Sensor Suhu
+                  </strong>
+
+                  <span id="sensorStatus">
+                    Waiting...
+                  </span>
+
+                </div>
+
+                <span
+                  class="system-check"
+                  id="sensorCheck">
+                  ●
+                </span>
+
+              </div>
+
+
+            </div>
+
+
+            <div class="last-update">
+
+              <span>
+                LAST UPDATE
+              </span>
+
+              <strong id="lastUpdate">
+                —
+              </strong>
+
+            </div>
+
+
+            <div class="database-path">
+
+              <span>
+                DATABASE
+              </span>
+
+              <code>
+                /dispenser
+              </code>
+
+            </div>
+
+          </article>
+
+
+        </section>
+
+
+
+        <!-- =================================================
+             DATA DETAILS
+             ================================================= -->
+
+        <section class="panel details-panel">
+
+          <div class="panel-header">
+
+            <div>
+
+              <span class="panel-label">
+                SENSOR DATA
+              </span>
+
+              <h3>
+                Detail Pembacaan
+              </h3>
+
+            </div>
+
+            <span class="realtime-label">
+              ● REALTIME
+            </span>
+
+          </div>
+
+
+          <div class="details-grid">
+
+
+            <div class="detail-box">
+
+              <span>
+                STATUS GALON
+              </span>
+
+              <strong id="detailGalon">
+                —
+              </strong>
+
+            </div>
+
+
+            <div class="detail-box">
+
+              <span>
+                SUHU DINGIN
+              </span>
+
+              <strong id="detailDingin">
+                — °C
+              </strong>
+
+            </div>
+
+
+            <div class="detail-box">
+
+              <span>
+                SUHU PANAS
+              </span>
+
+              <strong id="detailPanas">
+                — °C
+              </strong>
+
+            </div>
+
+
+            <div class="detail-box">
+
+              <span>
+                TOTAL AIR
+              </span>
+
+              <strong id="detailAir">
+                — L
+              </strong>
+
+            </div>
+
+
+          </div>
+
+        </section>
+
+
+      </div>
+
+
+
+      <!-- ==================================================
+           FOOTER
+           ================================================== -->
+
+      <footer>
+
+        <span>
+          © 2026 Smart Public Dispenser
+        </span>
+
+        <span>
+          ESP32 • Firebase Realtime Database
+        </span>
+
+      </footer>
+
+
+    </main>
+
+  </div>
+
+
+  <!-- ======================================================
+       FIREBASE
+       ====================================================== -->
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+
+
+  <!-- CHART JS -->
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+
+  <!-- APPLICATION -->
+
+  <script src="app.js"></script>
+
+</body>
+</html>
