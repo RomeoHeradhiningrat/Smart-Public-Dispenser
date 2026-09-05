@@ -5,34 +5,33 @@
 
 
 // ============================================================
-// FIREBASE CONFIGURATION
+// FIREBASE CONFIG
 // ============================================================
 
 const firebaseConfig = {
 
-  apiKey:
-    "AIzaSyBbCtWZDMtNB38YUfbWPSGe2F0vSOvm1n8",
+    apiKey: "AIzaSyBbCtWZDMtNB38YUfbWPSGe2F0vSOvm1n8",
 
-  authDomain:
-    "smart-dispenser-b4450.firebaseapp.com",
+    authDomain:
+        "smart-dispenser-b4450.firebaseapp.com",
 
-  databaseURL:
-    "https://smart-dispenser-b4450-default-rtdb.asia-southeast1.firebasedatabase.app",
+    databaseURL:
+        "https://smart-dispenser-b4450-default-rtdb.asia-southeast1.firebasedatabase.app",
 
-  projectId:
-    "smart-dispenser-b4450",
+    projectId:
+        "smart-dispenser-b4450",
 
-  storageBucket:
-    "smart-dispenser-b4450.firebasestorage.app",
+    storageBucket:
+        "smart-dispenser-b4450.firebasestorage.app",
 
-  messagingSenderId:
-    "1075653503034",
+    messagingSenderId:
+        "1075653503034",
 
-  appId:
-    "1:1075653503034:web:88370909f2535e8ffcad03",
+    appId:
+        "1:1075653503034:web:88370909f2535e8ffcad03",
 
-  measurementId:
-    "G-PS737QN390"
+    measurementId:
+        "G-PS737QN390"
 
 };
 
@@ -43,949 +42,885 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-const database =
-  firebase.database();
+const auth = firebase.auth();
+
+const database = firebase.database();
 
 
 // ============================================================
-// DATABASE REFERENCE
+// DOM
 // ============================================================
 
-const dispenserRef =
-  database.ref("dispenser");
+const loginPage =
+    document.getElementById("loginPage");
+
+const dashboardPage =
+    document.getElementById("dashboardPage");
+
+const loginForm =
+    document.getElementById("loginForm");
+
+const emailInput =
+    document.getElementById("emailInput");
+
+const passwordInput =
+    document.getElementById("passwordInput");
+
+const loginButton =
+    document.getElementById("loginButton");
+
+const loginButtonText =
+    document.getElementById("loginButtonText");
+
+const loginError =
+    document.getElementById("loginError");
+
+const togglePassword =
+    document.getElementById("togglePassword");
+
+const logoutButton =
+    document.getElementById("logoutButton");
+
+
+// ============================================================
+// DATA ELEMENTS
+// ============================================================
+
+const galonStatus =
+    document.getElementById("galonStatus");
+
+const galonDescription =
+    document.getElementById("galonDescription");
+
+const totalUsage =
+    document.getElementById("totalUsage");
+
+const coldTemp =
+    document.getElementById("coldTemp");
+
+const hotTemp =
+    document.getElementById("hotTemp");
+
+const detailGalon =
+    document.getElementById("detailGalon");
+
+const detailCold =
+    document.getElementById("detailCold");
+
+const detailHot =
+    document.getElementById("detailHot");
+
+const detailUsage =
+    document.getElementById("detailUsage");
+
+
+// ============================================================
+// STATUS ELEMENTS
+// ============================================================
+
+const firebaseDot =
+    document.getElementById("firebaseDot");
+
+const firebaseStatus =
+    document.getElementById("firebaseStatus");
+
+const dataDot =
+    document.getElementById("dataDot");
+
+const dataStatus =
+    document.getElementById("dataStatus");
+
+const sensorDot =
+    document.getElementById("sensorDot");
+
+const sensorStatus =
+    document.getElementById("sensorStatus");
+
+const lastUpdate =
+    document.getElementById("lastUpdate");
+
+const liveDot =
+    document.getElementById("liveDot");
+
+const liveText =
+    document.getElementById("liveText");
+
+const sidebarConnectionDot =
+    document.getElementById("sidebarConnectionDot");
+
+const sidebarConnectionText =
+    document.getElementById("sidebarConnectionText");
+
+
+// ============================================================
+// CHART VARIABLES
+// ============================================================
+
+let temperatureChart = null;
+
+const maxDataPoints = 30;
+
+const chartLabels = [];
+
+const coldTemperatureData = [];
+
+const hotTemperatureData = [];
 
 
 // ============================================================
 // HELPER
 // ============================================================
 
-function getNumber(value) {
+function setStatus(dot, textElement, online, text) {
 
-  const number =
-    Number(value);
+    if (online) {
 
-  if (
-    Number.isFinite(number)
-  ) {
+        dot.classList.remove("offline");
 
-    return number;
+        dot.classList.add("online");
 
-  }
+    } else {
 
-  return null;
+        dot.classList.remove("online");
+
+        dot.classList.add("offline");
+
+    }
+
+    textElement.textContent = text;
 
 }
 
 
 // ============================================================
-// FORMAT NUMBER
+// LOGIN ERROR
 // ============================================================
 
-function formatNumber(
-  value,
-  decimals
-) {
+function showLoginError(message) {
 
-  if (
-    value === null ||
-    value === undefined ||
-    !Number.isFinite(Number(value))
-  ) {
+    loginError.textContent = message;
 
-    return "—";
+    loginError.style.display = "block";
 
-  }
+}
 
-  return Number(value).toLocaleString(
-    "id-ID",
-    {
-      minimumFractionDigits:
-        decimals,
+function hideLoginError() {
 
-      maximumFractionDigits:
-        decimals
-    }
-  );
+    loginError.textContent = "";
+
+    loginError.style.display = "none";
 
 }
 
 
 // ============================================================
-// FORMAT TIME
+// LOGIN
 // ============================================================
 
-function getCurrentTime() {
+loginForm.addEventListener("submit", async function(event) {
 
-  const now =
-    new Date();
+    event.preventDefault();
 
-  return now.toLocaleTimeString(
-    "id-ID",
-    {
-      hour:
-        "2-digit",
+    hideLoginError();
 
-      minute:
-        "2-digit",
+    const email =
+        emailInput.value.trim();
 
-      second:
-        "2-digit"
-    }
-  );
+    const password =
+        passwordInput.value;
 
-}
+    if (!email || !password) {
 
+        showLoginError(
+            "Email dan password wajib diisi."
+        );
 
-// ============================================================
-// ELEMENTS
-// ============================================================
-
-const galonStatus =
-  document.getElementById(
-    "galonStatus"
-  );
-
-const galonIndicator =
-  document.getElementById(
-    "galonIndicator"
-  );
-
-const galonDescription =
-  document.getElementById(
-    "galonDescription"
-  );
-
-
-const totalAir =
-  document.getElementById(
-    "totalAir"
-  );
-
-
-const suhuDingin =
-  document.getElementById(
-    "suhuDingin"
-  );
-
-
-const suhuPanas =
-  document.getElementById(
-    "suhuPanas"
-  );
-
-
-const detailGalon =
-  document.getElementById(
-    "detailGalon"
-  );
-
-
-const detailDingin =
-  document.getElementById(
-    "detailDingin"
-  );
-
-
-const detailPanas =
-  document.getElementById(
-    "detailPanas"
-  );
-
-
-const detailAir =
-  document.getElementById(
-    "detailAir"
-  );
-
-
-const lastUpdate =
-  document.getElementById(
-    "lastUpdate"
-  );
-
-
-const firebaseStatus =
-  document.getElementById(
-    "firebaseStatus"
-  );
-
-
-const dataStatus =
-  document.getElementById(
-    "dataStatus"
-  );
-
-
-const sensorStatus =
-  document.getElementById(
-    "sensorStatus"
-  );
-
-
-const firebaseCheck =
-  document.getElementById(
-    "firebaseCheck"
-  );
-
-
-const dataCheck =
-  document.getElementById(
-    "dataCheck"
-  );
-
-
-const sensorCheck =
-  document.getElementById(
-    "sensorCheck"
-  );
-
-
-const topStatusDot =
-  document.getElementById(
-    "topStatusDot"
-  );
-
-
-const topStatusText =
-  document.getElementById(
-    "topStatusText"
-  );
-
-
-const sidebarConnectionDot =
-  document.getElementById(
-    "sidebarConnectionDot"
-  );
-
-
-const sidebarConnectionText =
-  document.getElementById(
-    "sidebarConnectionText"
-  );
-
-
-const welcomeSystemStatus =
-  document.getElementById(
-    "welcomeSystemStatus"
-  );
-
-
-// ============================================================
-// CONNECTION STATUS
-// ============================================================
-
-database
-  .ref(".info/connected")
-  .on(
-    "value",
-    function(snapshot) {
-
-      const connected =
-        snapshot.val() === true;
-
-
-      if (connected) {
-
-        topStatusDot
-          .classList
-          .add("connected");
-
-
-        topStatusText.textContent =
-          "Firebase Connected";
-
-
-        sidebarConnectionDot
-          .classList
-          .add("connected");
-
-
-        sidebarConnectionText.textContent =
-          "Online";
-
-
-        firebaseStatus.textContent =
-          "Connected";
-
-
-        firebaseCheck
-          .classList
-          .add("ok");
-
-
-        welcomeSystemStatus.textContent =
-          "ONLINE";
-
-      }
-
-      else {
-
-        topStatusDot
-          .classList
-          .remove("connected");
-
-
-        topStatusText.textContent =
-          "Firebase Disconnected";
-
-
-        sidebarConnectionDot
-          .classList
-          .remove("connected");
-
-
-        sidebarConnectionText.textContent =
-          "Offline";
-
-
-        firebaseStatus.textContent =
-          "Disconnected";
-
-
-        firebaseCheck
-          .classList
-          .remove("ok");
-
-
-        welcomeSystemStatus.textContent =
-          "OFFLINE";
-
-      }
-
-    }
-  );
-
-
-// ============================================================
-// REALTIME DATABASE
-// ============================================================
-
-dispenserRef.on(
-
-  "value",
-
-  function(snapshot) {
-
-    const data =
-      snapshot.val();
-
-
-    if (!data) {
-
-      dataStatus.textContent =
-        "No data";
-
-      return;
-
+        return;
     }
 
 
-    // ========================================================
-    // READ DATA
-    // ========================================================
+    loginButton.disabled = true;
 
-    const galon =
-      getNumber(
-        data.statusGalon
-      );
+    loginButtonText.textContent =
+        "Memproses login...";
 
 
-    const dingin =
-      getNumber(
-        data.suhuDingin
-      );
+    try {
 
-
-    const panas =
-      getNumber(
-        data.suhuPanas
-      );
-
-
-    const total =
-      getNumber(
-        data.totalPenggunaanAir
-      );
-
-
-    // ========================================================
-    // STATUS GALON
-    // ========================================================
-
-    if (galon === 1) {
-
-      galonStatus.textContent =
-        "TERSEDIA";
-
-
-      galonDescription.textContent =
-        "Galon masih tersedia";
-
-
-      galonIndicator.style.background =
-        "#16b364";
-
-
-      galonIndicator.style.boxShadow =
-        "0 0 0 4px rgba(22,179,100,.08)";
-
-
-      detailGalon.textContent =
-        "TERSEDIA";
+        await auth.signInWithEmailAndPassword(
+            email,
+            password
+        );
 
     }
 
-    else if (galon === 0) {
+    catch (error) {
 
-      galonStatus.textContent =
-        "HABIS";
-
-
-      galonDescription.textContent =
-        "Galon perlu diganti";
-
-
-      galonIndicator.style.background =
-        "#ef4444";
-
-
-      galonIndicator.style.boxShadow =
-        "0 0 0 4px rgba(239,68,68,.08)";
-
-
-      detailGalon.textContent =
-        "HABIS";
-
-    }
-
-    else {
-
-      galonStatus.textContent =
-        "UNKNOWN";
-
-
-      galonDescription.textContent =
-        "Data tidak valid";
-
-
-      detailGalon.textContent =
-        "UNKNOWN";
-
-    }
-
-
-    // ========================================================
-    // TOTAL AIR
-    // ========================================================
-
-    if (total !== null) {
-
-      totalAir.textContent =
-        formatNumber(
-          total,
-          2
+        console.error(
+            "Firebase Login Error:",
+            error
         );
 
 
-      detailAir.textContent =
-        formatNumber(
-          total,
-          2
-        ) + " L";
+        let message =
+            "Login gagal. Periksa email dan password.";
 
-    }
+        switch (error.code) {
 
-    else {
+            case "auth/invalid-email":
 
-      totalAir.textContent =
-        "—";
+                message =
+                    "Format email tidak valid.";
 
+                break;
 
-      detailAir.textContent =
-        "— L";
 
-    }
+            case "auth/user-disabled":
 
+                message =
+                    "Akun Firebase ini dinonaktifkan.";
 
-    // ========================================================
-    // SUHU DINGIN
-    // ========================================================
+                break;
 
-    if (dingin !== null) {
 
-      suhuDingin.textContent =
-        formatNumber(
-          dingin,
-          1
-        );
+            case "auth/user-not-found":
 
+                message =
+                    "Akun tidak ditemukan.";
 
-      detailDingin.textContent =
-        formatNumber(
-          dingin,
-          1
-        ) + " °C";
+                break;
 
-    }
 
-    else {
+            case "auth/wrong-password":
 
-      suhuDingin.textContent =
-        "—";
+                message =
+                    "Password salah.";
 
+                break;
 
-      detailDingin.textContent =
-        "— °C";
 
-    }
+            case "auth/invalid-credential":
 
+                message =
+                    "Email atau password salah.";
 
-    // ========================================================
-    // SUHU PANAS
-    // ========================================================
+                break;
 
-    if (panas !== null) {
 
-      suhuPanas.textContent =
-        formatNumber(
-          panas,
-          1
-        );
+            case "auth/too-many-requests":
 
+                message =
+                    "Terlalu banyak percobaan login. Coba lagi nanti.";
 
-      detailPanas.textContent =
-        formatNumber(
-          panas,
-          1
-        ) + " °C";
+                break;
 
-    }
 
-    else {
+            case "auth/network-request-failed":
 
-      suhuPanas.textContent =
-        "—";
+                message =
+                    "Tidak dapat terhubung ke Firebase.";
 
-
-      detailPanas.textContent =
-        "— °C";
-
-    }
-
-
-    // ========================================================
-    // DATA STATUS
-    // ========================================================
-
-    dataStatus.textContent =
-      "Receiving data";
-
-
-    dataCheck
-      .classList
-      .add("ok");
-
-
-    if (
-      dingin !== null ||
-      panas !== null
-    ) {
-
-      sensorStatus.textContent =
-        "Sensor active";
-
-
-      sensorCheck
-        .classList
-        .add("ok");
-
-    }
-
-
-    // ========================================================
-    // LAST UPDATE
-    // ========================================================
-
-    lastUpdate.textContent =
-      getCurrentTime();
-
-
-    // ========================================================
-    // UPDATE GRAPH
-    // ========================================================
-
-    addTemperatureData(
-      dingin,
-      panas
-    );
-
-  },
-
-  function(error) {
-
-    console.error(
-      "Firebase error:",
-      error
-    );
-
-
-    dataStatus.textContent =
-      "Read error";
-
-
-    dataCheck
-      .classList
-      .remove("ok");
-
-  }
-
-);
-
-
-// ============================================================
-// TEMPERATURE CHART
-// ============================================================
-
-const chartCanvas =
-  document.getElementById(
-    "temperatureChart"
-  );
-
-
-const chartContext =
-  chartCanvas.getContext(
-    "2d"
-  );
-
-
-const temperatureChart =
-  new Chart(
-    chartContext,
-    {
-
-      type:
-        "line",
-
-      data:
-      {
-
-        labels:
-          [],
-
-        datasets:
-        [
-
-          {
-            label:
-              "Suhu Dingin",
-
-            data:
-              [],
-
-            borderColor:
-              "#1677ff",
-
-            backgroundColor:
-              "rgba(22,119,255,.07)",
-
-            borderWidth:
-              2,
-
-            pointRadius:
-              2,
-
-            pointHoverRadius:
-              5,
-
-            tension:
-              .35,
-
-            fill:
-              true
-          },
-
-
-          {
-            label:
-              "Suhu Panas",
-
-            data:
-              [],
-
-            borderColor:
-              "#f97316",
-
-            backgroundColor:
-              "rgba(249,115,22,.05)",
-
-            borderWidth:
-              2,
-
-            pointRadius:
-              2,
-
-            pointHoverRadius:
-              5,
-
-            tension:
-              .35,
-
-            fill:
-              true
-          }
-
-        ]
-
-      },
-
-
-      options:
-      {
-
-        responsive:
-          true,
-
-        maintainAspectRatio:
-          false,
-
-        interaction:
-        {
-          mode:
-            "index",
-
-          intersect:
-            false
-        },
-
-
-        plugins:
-        {
-
-          legend:
-          {
-            display:
-              false
-          },
-
-
-          tooltip:
-          {
-
-            backgroundColor:
-              "#ffffff",
-
-            titleColor:
-              "#142033",
-
-            bodyColor:
-              "#607089",
-
-            borderColor:
-              "#e6ebf2",
-
-            borderWidth:
-              1,
-
-            padding:
-              10,
-
-            callbacks:
-            {
-
-              label:
-                function(context) {
-
-                  return (
-                    " " +
-                    context.dataset.label +
-                    ": " +
-                    context.parsed.y +
-                    " °C"
-                  );
-
-                }
-
-            }
-
-          }
-
-        },
-
-
-        scales:
-        {
-
-          x:
-          {
-
-            grid:
-            {
-              color:
-                "#f0f3f7"
-            },
-
-            ticks:
-            {
-              color:
-                "#91a0b5",
-
-              font:
-              {
-                size:
-                  8
-              },
-
-              maxTicksLimit:
-                7
-            }
-
-          },
-
-
-          y:
-          {
-
-            grid:
-            {
-              color:
-                "#edf1f5"
-            },
-
-            ticks:
-            {
-
-              color:
-                "#91a0b5",
-
-              font:
-              {
-                size:
-                  8
-              },
-
-              callback:
-                function(value) {
-
-                  return value +
-                    "°C";
-
-                }
-
-            }
-
-          }
+                break;
 
         }
 
-      }
+
+        showLoginError(message);
 
     }
-  );
+
+
+    finally {
+
+        loginButton.disabled = false;
+
+        loginButtonText.textContent =
+            "Login Dashboard";
+
+    }
+
+});
 
 
 // ============================================================
-// GRAPH DATA
+// TOGGLE PASSWORD
 // ============================================================
 
-const MAX_GRAPH_POINTS =
-  30;
+togglePassword.addEventListener(
+    "click",
+    function() {
+
+        if (
+            passwordInput.type ===
+            "password"
+        ) {
+
+            passwordInput.type =
+                "text";
+
+            togglePassword.textContent =
+                "🙈";
+
+        } else {
+
+            passwordInput.type =
+                "password";
+
+            togglePassword.textContent =
+                "👁";
+
+        }
+
+    }
+);
 
 
-function addTemperatureData(
-  dingin,
-  panas
-) {
+// ============================================================
+// LOGOUT
+// ============================================================
 
-  if (
-    dingin === null &&
-    panas === null
-  ) {
+logoutButton.addEventListener(
+    "click",
+    async function() {
 
-    return;
+        try {
 
-  }
+            await auth.signOut();
 
+        }
 
-  const time =
-    new Date().toLocaleTimeString(
-      "id-ID",
-      {
-        hour:
-          "2-digit",
+        catch (error) {
 
-        minute:
-          "2-digit",
+            console.error(
+                "Logout Error:",
+                error
+            );
 
-        second:
-          "2-digit"
-      }
-    );
+        }
+
+    }
+);
 
 
-  temperatureChart.data.labels.push(
-    time
-  );
+// ============================================================
+// AUTH STATE
+// ============================================================
+
+auth.onAuthStateChanged(
+    function(user) {
+
+        if (user) {
+
+            console.log(
+                "Firebase Authenticated:",
+                user.email
+            );
 
 
-  temperatureChart.data.datasets[0].data.push(
-    dingin
-  );
+            loginPage.classList.add(
+                "hidden"
+            );
+
+            dashboardPage.classList.remove(
+                "hidden"
+            );
 
 
-  temperatureChart.data.datasets[1].data.push(
-    panas
-  );
+            startDashboard();
+
+        } else {
+
+            console.log(
+                "User belum login."
+            );
 
 
-  // ==========================================================
-  // LIMIT DATA
-  // ==========================================================
+            dashboardPage.classList.add(
+                "hidden"
+            );
 
-  if (
-    temperatureChart.data.labels.length >
-    MAX_GRAPH_POINTS
-  ) {
-
-    temperatureChart.data.labels.shift();
-
-    temperatureChart.data.datasets.forEach(
-      function(dataset) {
-
-        dataset.data.shift();
-
-      }
-    );
-
-  }
+            loginPage.classList.remove(
+                "hidden"
+            );
 
 
-  temperatureChart.update(
-    "none"
-  );
+            stopDashboard();
+
+        }
+
+    }
+);
+
+
+// ============================================================
+// DASHBOARD START
+// ============================================================
+
+let dashboardStarted = false;
+
+let databaseListener = null;
+
+let connectionListener = null;
+
+
+function startDashboard() {
+
+    if (dashboardStarted) {
+        return;
+    }
+
+    dashboardStarted = true;
+
+
+    initializeChart();
+
+    listenFirebaseConnection();
+
+    listenDispenserData();
 
 }
 
 
 // ============================================================
-// INITIAL MESSAGE
+// DASHBOARD STOP
 // ============================================================
 
-console.log(
-  "=========================================="
-);
+function stopDashboard() {
 
-console.log(
-  "SMART PUBLIC DISPENSER DASHBOARD"
-);
+    if (!dashboardStarted) {
+        return;
+    }
 
-console.log(
-  "Firebase initialized"
-);
 
-console.log(
-  "Database path: /dispenser"
-);
+    dashboardStarted = false;
 
-console.log(
-  "=========================================="
-);
+
+    if (databaseListener) {
+
+        database.ref("dispenser")
+            .off(
+                "value",
+                databaseListener
+            );
+
+        databaseListener = null;
+
+    }
+
+
+    if (connectionListener) {
+
+        database.ref(".info/connected")
+            .off(
+                "value",
+                connectionListener
+            );
+
+        connectionListener = null;
+
+    }
+
+
+    if (temperatureChart) {
+
+        temperatureChart.destroy();
+
+        temperatureChart = null;
+
+    }
+
+}
+
+
+// ============================================================
+// FIREBASE CONNECTION
+// ============================================================
+
+function listenFirebaseConnection() {
+
+    connectionListener =
+        function(snapshot) {
+
+            const connected =
+                snapshot.val() === true;
+
+
+            if (connected) {
+
+                setStatus(
+                    firebaseDot,
+                    firebaseStatus,
+                    true,
+                    "Connected"
+                );
+
+
+                setStatus(
+                    sidebarConnectionDot,
+                    sidebarConnectionText,
+                    true,
+                    "Firebase Online"
+                );
+
+
+                liveDot.classList.add(
+                    "online"
+                );
+
+                liveText.textContent =
+                    "Live";
+
+            } else {
+
+                setStatus(
+                    firebaseDot,
+                    firebaseStatus,
+                    false,
+                    "Offline"
+                );
+
+
+                setStatus(
+                    sidebarConnectionDot,
+                    sidebarConnectionText,
+                    false,
+                    "Firebase Offline"
+                );
+
+
+                liveDot.classList.remove(
+                    "online"
+                );
+
+                liveText.textContent =
+                    "Offline";
+
+            }
+
+        };
+
+
+    database
+        .ref(".info/connected")
+        .on(
+            "value",
+            connectionListener
+        );
+
+}
+
+
+// ============================================================
+// READ DISPENSER
+// ============================================================
+
+function listenDispenserData() {
+
+    const dispenserRef =
+        database.ref("dispenser");
+
+
+    databaseListener =
+        function(snapshot) {
+
+            console.log(
+                "Firebase /dispenser:",
+                snapshot.val()
+            );
+
+
+            const data =
+                snapshot.val();
+
+
+            if (!data) {
+
+                setStatus(
+                    dataDot,
+                    dataStatus,
+                    false,
+                    "No Data"
+                );
+
+                return;
+
+            }
+
+
+            // =================================================
+            // STATUS GALON
+            // =================================================
+
+            const galon =
+                Number(data.statusGalon);
+
+
+            detailGalon.textContent =
+                Number.isFinite(galon)
+                    ? galon
+                    : "—";
+
+
+            if (galon === 1) {
+
+                galonStatus.textContent =
+                    "Tersedia";
+
+                galonStatus.style.color =
+                    "#16a34a";
+
+                galonDescription.textContent =
+                    "Air galon tersedia";
+
+            }
+
+            else if (galon === 0) {
+
+                galonStatus.textContent =
+                    "Habis";
+
+                galonStatus.style.color =
+                    "#dc2626";
+
+                galonDescription.textContent =
+                    "Air galon habis";
+
+            }
+
+            else {
+
+                galonStatus.textContent =
+                    "Unknown";
+
+                galonStatus.style.color =
+                    "#6b7280";
+
+                galonDescription.textContent =
+                    "Status tidak diketahui";
+
+            }
+
+
+            // =================================================
+            // SUHU DINGIN
+            // =================================================
+
+            const cold =
+                Number(data.suhuDingin);
+
+
+            if (Number.isFinite(cold)) {
+
+                coldTemp.textContent =
+                    cold.toFixed(1);
+
+                detailCold.textContent =
+                    cold.toFixed(1) + " °C";
+
+            } else {
+
+                coldTemp.textContent =
+                    "--";
+
+                detailCold.textContent =
+                    "—";
+
+            }
+
+
+            // =================================================
+            // SUHU PANAS
+            // =================================================
+
+            const hot =
+                Number(data.suhuPanas);
+
+
+            if (Number.isFinite(hot)) {
+
+                hotTemp.textContent =
+                    hot.toFixed(1);
+
+                detailHot.textContent =
+                    hot.toFixed(1) + " °C";
+
+            } else {
+
+                hotTemp.textContent =
+                    "--";
+
+                detailHot.textContent =
+                    "—";
+
+            }
+
+
+            // =================================================
+            // TOTAL PENGGUNAAN AIR
+            // =================================================
+
+            const usage =
+                Number(data.totalPenggunaanAir);
+
+
+            if (Number.isFinite(usage)) {
+
+                totalUsage.textContent =
+                    usage.toFixed(2);
+
+                detailUsage.textContent =
+                    usage.toFixed(2) + " L";
+
+            } else {
+
+                totalUsage.textContent =
+                    "0.00";
+
+                detailUsage.textContent =
+                    "—";
+
+            }
+
+
+            // =================================================
+            // SYSTEM STATUS
+            // =================================================
+
+            setStatus(
+                dataDot,
+                dataStatus,
+                true,
+                "Receiving"
+            );
+
+
+            setStatus(
+                sensorDot,
+                sensorStatus,
+                Number.isFinite(cold) ||
+                Number.isFinite(hot),
+                (
+                    Number.isFinite(cold) ||
+                    Number.isFinite(hot)
+                )
+                    ? "Active"
+                    : "Waiting"
+            );
+
+
+            // =================================================
+            // LAST UPDATE
+            // =================================================
+
+            const now =
+                new Date();
+
+            lastUpdate.textContent =
+                now.toLocaleTimeString(
+                    "id-ID",
+                    {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit"
+                    }
+                );
+
+
+            // =================================================
+            // CHART
+            // =================================================
+
+            if (
+                Number.isFinite(cold) &&
+                Number.isFinite(hot)
+            ) {
+
+                addChartData(
+                    cold,
+                    hot
+                );
+
+            }
+
+        };
+
+
+    dispenserRef.on(
+        "value",
+        databaseListener,
+        function(error) {
+
+            console.error(
+                "Firebase Read Error:",
+                error
+            );
+
+
+            setStatus(
+                dataDot,
+                dataStatus,
+                false,
+                "Read Error"
+            );
+
+
+            setStatus(
+                sensorDot,
+                sensorStatus,
+                false,
+                "Waiting"
+            );
+
+        }
+    );
+
+}
+
+
+// ============================================================
+// CHART
+// ============================================================
+
+function initializeChart() {
+
+    const canvas =
+        document.getElementById(
+            "temperatureChart"
+        );
+
+
+    if (!canvas) {
+        return;
+    }
+
+
+    const context =
+        canvas.getContext("2d");
+
+
+    temperatureChart =
+        new Chart(
+            context,
+            {
+
+                type: "line",
+
+                data: {
+
+                    labels: chartLabels,
+
+                    datasets: [
+
+                        {
+
+                            label:
+                                "Suhu Dingin",
+
+                            data:
+                                coldTemperatureData,
+
+                            borderColor:
+                                "#0891b2",
+
+                            backgroundColor:
+                                "
